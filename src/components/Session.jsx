@@ -11,8 +11,8 @@ export default function Session({ m, timer, onBack, onLoad, onOpenSettings }) {
   const cover = m.nowTrack ? thumb(m.nowTrack.id) : null;
 
   return (
-    <div className={`session ${isFocus ? 'focus' : 'break'}`}>
-      {cover && <div className="session-bg" style={{ backgroundImage: `url("${cover}")` }} />}
+    <div className={`session ${isFocus ? 'focus' : 'break'} ${cover ? 'has-cover' : ''}`}>
+      {cover && <div key={cover} className="session-bg" style={{ backgroundImage: `url("${cover}")` }} />}
 
       <header className="session-top">
         <button className="icon-btn circle-dark" onClick={onBack} title="Về Dashboard">
