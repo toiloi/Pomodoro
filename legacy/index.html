@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pomodoro Music</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-mode="focus" data-view="dashboard">
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <main id="dashboard" class="app view">
+    <header class="top">
+      <h1>🍅 Pomodoro Music</h1>
+      <button id="settingsToggle" class="ghost" title="Cài đặt">⚙️ Cài đặt</button>
+    </header>
+
+    <section id="settings" class="card settings hidden">
+      <div class="grid">
+        <label>Tập trung (phút)
+          <input type="number" id="focusMin" min="1" max="300" step="1" />
+        </label>
+        <label>Nghỉ ngắn (phút)
+          <input type="number" id="shortMin" min="1" max="120" step="1" />
+        </label>
+        <label>Nghỉ dài (phút)
+          <input type="number" id="longMin" min="1" max="120" step="1" />
+        </label>
+        <label>Số phiên trước nghỉ dài
+          <input type="number" id="rounds" min="1" max="12" step="1" />
+        </label>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="musicFollowTimer" /> Nhạc chỉ phát khi tập trung (tự dừng lúc nghỉ)</label>
+        <label><input type="checkbox" id="autoStartNext" /> Tự động bắt đầu phiên tiếp theo</label>
+        <label><input type="checkbox" id="notify" /> Thông báo trình duyệt khi hết giờ</label>
+      </div>
+      <button id="saveSettings" class="primary">Lưu</button>
+    </section>
+
+    <section class="card timer">
+      <div class="modes">
+        <button data-mode="focus" class="mode active">Tập trung</button>
+        <button data-mode="short" class="mode">Nghỉ ngắn</button>
+        <button data-mode="long" class="mode">Nghỉ dài</button>
+      </div>
+      <div class="time js-time">25:00</div>
+      <div class="progress"><div class="bar js-bar"></div></div>
+      <div class="round js-round">Phiên #1</div>
+      <div class="controls">
+        <button class="ghost circle js-reset" title="Đặt lại">↺</button>
+        <button id="dashStart" class="primary big">Bắt đầu</button>
+        <button class="ghost circle js-skip" title="Bỏ qua">⏭</button>
+      </div>
+    </section>
+
+    <section class="card music">
+      <h2>Nhạc</h2>
+      <form class="link-row js-link-form">
+        <input type="text" class="js-link" placeholder="Dán link YouTube (video hoặc playlist)…" autocomplete="off" />
+        <button type="submit" class="primary">Tải</button>
+      </form>
+      <p class="msg js-msg"></p>
+
+      <div id="loadedInfo" class="loaded hidden">
+        <img id="loadedThumb" alt="" />
+        <div>
+          <div id="loadedTitle" class="loaded-title"></div>
+          <div id="loadedCount" class="muted"></div>
+        </div>
+        <button id="openPlayer" class="ghost">Mở trình phát ▸</button>
+      </div>
+
+      <details class="history">
+        <summary>Link đã dùng</summary>
+        <ul id="historyList"></ul>
+      </details>
+    </section>
+  </main>
+
+  <!-- ===================== SESSION / PLAYER ===================== -->
+  <main id="session" class="session view">
+    <header class="session-top">
+      <button id="backDash" class="ghost">← Dashboard</button>
+      <span class="mode-pill js-mode-label">Tập trung</span>
+    </header>
+
+    <div class="session-grid">
+      <!-- Cột trái: đĩa + timer + điều khiển -->
+      <section class="stage">
+        <div class="turntable">
+          <div id="disc" class="disc">
+            <div class="grooves"></div>
+            <div id="discLabel" class="disc-label"></div>
+            <div class="disc-hole"></div>
+          </div>
+          <div id="tonearm" class="tonearm"><span></span></div>
+        </div>
+
+        <div class="track-info">
+          <div id="trackTitle" class="track-title">Chưa có nhạc</div>
+          <div id="trackAuthor" class="muted"></div>
+        </div>
+
+        <div class="music-controls">
+          <button id="shuffle" class="icon toggle" title="Trộn bài">🔀</button>
+          <button id="prev" class="icon" title="Bài trước">⏮</button>
+          <button id="playPause" class="play" title="Phát / Dừng">▶</button>
+          <button id="next" class="icon" title="Bài tiếp">⏭</button>
+          <button id="loop" class="icon toggle" title="Lặp lại">🔁</button>
+        </div>
+        <div class="volume-row">
+          <span>🔈</span><input type="range" id="volume" min="0" max="100" title="Âm lượng" /><span>🔊</span>
+        </div>
+
+        <div class="session-timer">
+          <div class="time small js-time">25:00</div>
+          <div class="progress"><div class="bar js-bar"></div></div>
+          <div class="round js-round"></div>
+          <div class="controls">
+            <button class="ghost circle js-reset" title="Đặt lại">↺</button>
+            <button id="sessionStartPause" class="primary">Tạm dừng</button>
+            <button class="ghost circle js-skip" title="Bỏ qua">⏭</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cột phải: danh sách bài -->
+      <section class="queue">
+        <div class="queue-head">
+          <h2>Danh sách phát <span id="queueCount" class="muted"></span></h2>
+          <input type="text" id="queueFilter" placeholder="Tìm bài…" autocomplete="off" />
+        </div>
+        <ol id="queueList" class="queue-list"></ol>
+        <form class="link-row js-link-form">
+          <input type="text" class="js-link" placeholder="Đổi playlist: dán link YouTube…" autocomplete="off" />
+          <button type="submit" class="primary">Tải</button>
+        </form>
+        <p class="msg js-msg"></p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Trình phát YouTube ẩn – chỉ lấy âm thanh -->
+  <div class="yt-hidden" aria-hidden="true"><div id="player"></div></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
+</body>
+</html>

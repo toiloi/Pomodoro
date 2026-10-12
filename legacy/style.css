@@ -1,0 +1,299 @@
+:root {
+  --bg: #121316;
+  --bg-2: #1b1d22;
+  --card: #22252b;
+  --hover: #2c3038;
+  --text: #eceff4;
+  --muted: #9aa3b2;
+  --accent: #e5534b;
+  --border: #33373f;
+}
+body[data-mode="short"] { --accent: #3fa37a; }
+body[data-mode="long"]  { --accent: #4a8fd8; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.muted { color: var(--muted); font-size: .88rem; }
+.hidden { display: none !important; }
+
+/* Chuyển view */
+body[data-view="dashboard"] #session { display: none; }
+body[data-view="session"] #dashboard { display: none; }
+
+/* YouTube player ẩn (không dùng display:none để trình duyệt không chặn phát) */
+.yt-hidden {
+  position: fixed;
+  width: 200px; height: 200px;
+  left: -10000px; top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Thành phần chung ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, opacity .15s, transform .1s;
+}
+button:hover { border-color: var(--accent); }
+button:active { transform: scale(.96); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button.primary:hover { opacity: .9; }
+button.big { font-size: 1.2rem; padding: 12px 40px; min-width: 160px; }
+button.circle { font-size: 1.3rem; width: 52px; height: 52px; padding: 0; border-radius: 50%; }
+
+input[type="text"], input[type="number"] {
+  font: inherit;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+input[type="range"] { accent-color: var(--accent); }
+
+.time {
+  font-size: clamp(4rem, 18vw, 7rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+  margin: 16px 0 8px;
+}
+.time.small { font-size: 2.6rem; margin: 0 0 8px; }
+.progress { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.bar { height: 100%; width: 0; background: var(--accent); transition: width .5s linear; }
+.round { color: var(--muted); margin: 12px 0 16px; font-size: .9rem; }
+.controls { display: flex; justify-content: center; align-items: center; gap: 12px; }
+
+.link-row { display: flex; gap: 8px; }
+.link-row input { flex: 1; min-width: 0; }
+.msg { min-height: 1.2em; margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
+.msg.error { color: #ff8a80; }
+
+/* ---------- Dashboard ---------- */
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.top { display: flex; justify-content: space-between; align-items: center; }
+.top h1 { font-size: 1.4rem; margin: 0; }
+
+.settings .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
+.settings label { display: flex; flex-direction: column; gap: 6px; font-size: .9rem; color: var(--muted); }
+.settings .checks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.settings .checks label { flex-direction: row; align-items: center; gap: 8px; color: var(--text); }
+
+.timer { text-align: center; }
+.modes { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.mode.active { background: var(--accent); border-color: var(--accent); }
+
+.loaded {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 12px; padding: 10px;
+  background: var(--bg-2); border-radius: 12px;
+}
+.loaded img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; background: #000; }
+.loaded > div { flex: 1; min-width: 0; }
+.loaded-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.history { margin-top: 14px; color: var(--muted); font-size: .9rem; }
+.history summary { cursor: pointer; }
+.history ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.history li { display: flex; gap: 6px; align-items: center; }
+.history li button.load {
+  flex: 1; text-align: left; border: none; padding: 6px 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text);
+}
+.history li button.load:hover { background: var(--hover); }
+.history li button.del { border: none; padding: 4px 8px; color: var(--muted); }
+
+/* ---------- Session (kiểu Spotify) ---------- */
+.session {
+  min-height: 100vh;
+  padding: 16px;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 60%),
+    var(--bg);
+  transition: background .4s;
+}
+.session-top {
+  max-width: 1100px; margin: 0 auto 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.mode-pill {
+  background: var(--accent); color: #fff; font-weight: 600;
+  padding: 6px 14px; border-radius: 999px; font-size: .9rem;
+}
+
+.session-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(320px, 1.1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.stage { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+
+/* Đĩa than */
+.turntable { position: relative; width: min(340px, 80vw); aspect-ratio: 1; margin-top: 8px; }
+.disc {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 30deg, transparent 0 20%, rgba(255,255,255,.08) 25%, transparent 30% 70%, rgba(255,255,255,.08) 75%, transparent 80%),
+    radial-gradient(circle, #0b0b0d 0 30%, #18181b 31%, #0e0e10 100%);
+  box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 0 6px #0a0a0b;
+  animation: spin 3.2s linear infinite;
+  animation-play-state: paused;
+}
+.grooves {
+  position: absolute; inset: 4%;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, rgba(255,255,255,.035) 0 1px, transparent 1px 4px);
+}
+.disc-label {
+  position: absolute; inset: 31%;
+  border-radius: 50%;
+  background: var(--accent) center / cover no-repeat;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.4);
+}
+.disc-hole {
+  position: absolute; left: 50%; top: 50%;
+  width: 4%; height: 4%; transform: translate(-50%, -50%);
+  border-radius: 50%; background: var(--bg);
+}
+body.playing .disc { animation-play-state: running; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Cần đĩa */
+.tonearm {
+  position: absolute; right: -6%; top: -4%;
+  width: 14%; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #c9ccd2 0 35%, #7d828b 36% 100%);
+  transform-origin: 50% 50%;
+  transform: rotate(-28deg);
+  transition: transform .6s ease;
+  z-index: 2;
+}
+.tonearm span {
+  position: absolute; left: 44%; top: 50%;
+  width: 12%; height: 330%;
+  background: linear-gradient(#d7dae0, #9aa0aa);
+  border-radius: 4px;
+  transform-origin: top center;
+}
+.tonearm span::after {
+  content: ""; position: absolute; left: -90%; bottom: -8%;
+  width: 280%; height: 16%; border-radius: 3px; background: #2a2c31;
+}
+body.playing .tonearm { transform: rotate(0deg); }
+
+.track-info { width: 100%; max-width: 420px; }
+.track-title {
+  font-size: 1.25rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.music-controls { display: flex; align-items: center; gap: 14px; }
+.music-controls .icon { border: none; font-size: 1.3rem; padding: 8px; opacity: .85; }
+.music-controls .icon:hover { opacity: 1; }
+.music-controls .toggle { opacity: .4; }
+.music-controls .toggle.on { opacity: 1; filter: drop-shadow(0 0 6px var(--accent)); }
+.music-controls .play {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #fff; color: #111; border: none;
+  font-size: 1.4rem; padding: 0;
+}
+.volume-row { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 320px; font-size: .9rem; }
+.volume-row input { flex: 1; }
+
+.session-timer {
+  width: 100%; max-width: 420px;
+  background: rgba(0,0,0,.25); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 20px;
+}
+.session-timer .round { margin: 10px 0 12px; }
+.session-timer .circle { width: 44px; height: 44px; font-size: 1.1rem; }
+#sessionStartPause { min-width: 130px; padding: 10px 20px; }
+
+/* Danh sách phát */
+.queue {
+  background: rgba(0,0,0,.28);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  max-height: calc(100vh - 100px);
+  position: sticky; top: 16px;
+}
+.queue-head { display: flex; flex-direction: column; gap: 10px; }
+.queue-head h2 { margin: 0; }
+.queue-list {
+  list-style: none; margin: 0; padding: 0;
+  overflow-y: auto; flex: 1; min-height: 120px;
+}
+.queue-list li {
+  display: grid;
+  grid-template-columns: 28px 44px 1fr;
+  align-items: center; gap: 12px;
+  padding: 6px 8px; border-radius: 8px;
+  cursor: pointer;
+}
+.queue-list li[hidden] { display: none; }
+.queue-list li:hover { background: var(--hover); }
+.queue-list li .num { color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; font-size: .9rem; }
+.queue-list li img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; background: #000; }
+.queue-list li .meta { min-width: 0; }
+.queue-list li .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-list li .a { color: var(--muted); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-list li.active .t { color: var(--accent); font-weight: 600; }
+.queue-list li.unavailable { opacity: .35; cursor: not-allowed; }
+.queue-list .empty { display: block; color: var(--muted); cursor: default; padding: 16px 8px; }
+.queue-list .empty:hover { background: none; }
+
+/* Cột sóng nhạc trên bài đang phát */
+.eq { display: none; justify-content: center; align-items: flex-end; gap: 2px; height: 14px; }
+.eq i { width: 3px; background: var(--accent); animation: eq 1s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -.4s; }
+.eq i:nth-child(3) { animation-delay: -.7s; }
+@keyframes eq { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+.queue-list li.active .num-text { display: none; }
+.queue-list li.active .eq { display: flex; }
+body:not(.playing) .eq i { animation-play-state: paused; }
+
+@media (max-width: 820px) {
+  .session-grid { grid-template-columns: 1fr; }
+  .queue { position: static; max-height: 60vh; }
+}
+@media (max-width: 480px) {
+  .settings .grid { grid-template-columns: 1fr; }
+}
